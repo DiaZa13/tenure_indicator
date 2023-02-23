@@ -1,8 +1,6 @@
-# Basado en: https://github.com/tdenzl/BuLiAn/blob/main/BuLiAn.py
-
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+import plotly.graph_objects as go
 from PreprocessingData import get_agencies_balances, get_atm_balances, get_atm_transport
 
 
@@ -13,9 +11,19 @@ header = st.container()
 dataset = st.container()
 graphs = st.container()
 
-col0, col1 = st.columns(2)
+padding_top = 2.5
+
+st.markdown(f'''
+            <style>
+                .css-k1ih3n {{
+                    padding-top: {padding_top}rem;
+                }}
+            </style>
+            ''', unsafe_allow_html=True,
+    )
 
 with header:
+
     st.title('Analizador de la Tenencia')
 
 with dataset:
@@ -25,6 +33,8 @@ with dataset:
         'Para actualizar las gráficas de tenencia deberá de subir los archivos de balances diarios')
 
     data = pd.read_feather('tenure.feather')
+
+    col0, col1 = st.columns(2)
 
     with col0:
         uploaded_agency_file = st.file_uploader("Seleccione el balance diario de agencia")
@@ -43,4 +53,21 @@ with dataset:
 with graphs:                
     st.header('Estadísticas generales')
 
-    st.plotly_chart(px.bar(data, x='date', y='hnl', color='type'), use_container_width=True)
+ 
+    fig = go.Figure()
+    salas = data[data['type'] == 'Salas']
+    agencias = data[data['type'] == 'Agencias']
+    automatic = data[data['type'] == 'ATM']
+    transport = data[data['type'] == 'Transporte']
+    fig.add_trace(go.Bar(x=salas['date'], y=salas['hnl'], name='Salas'))
+    fig.add_trace(go.Bar(x=agencias['date'], y=agencias['hnl'], name='Agencias'))
+    fig.add_trace(go.Bar(x=automatic['date'], y=automatic['hnl'], name='ATM'))
+    fig.add_trace(go.Bar(x=transport['date'], y=transport['hnl'], name='Transporte'))
+
+    group_data = data.groupby(by=['date'], as_index=False).sum(numeric_only=True)
+    fig.add_scatter(x = group_data['date'], y=group_data['hnl'], mode="markers", opacity=0,
+                    marker={'symbol': 'square'},
+                    line={'color':'black'},
+                    name='Total')
+    fig.update_layout(barmode='relative', title_text='Saldos totales por día')
+    st.plotly_chart(fig, use_container_width=True);
