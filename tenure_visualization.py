@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
-from PreprocessingData import get_agencies_balances, get_atm_balances, get_atm_transport
+from PreprocessingData import get_agencies_balances, get_atm_balances, get_atm_transport, graphBalance, getData
 
 
 # page configuration
@@ -9,7 +9,7 @@ st.set_page_config(page_title='Análisis de tenencia', page_icon='random', layou
 
 header = st.container()
 dataset = st.container()
-graphs = st.container()
+graphs = st.empty()
 
 padding_top = 2.5
 
@@ -32,7 +32,7 @@ with dataset:
     st.markdown(
         'Para actualizar las gráficas de tenencia deberá de subir los archivos de balances diarios')
 
-    data = pd.read_feather('tenure.feather')
+    data = getData();
 
     col0, col1 = st.columns(2)
 
@@ -40,34 +40,25 @@ with dataset:
         uploaded_agency_file = st.file_uploader("Seleccione el balance diario de agencia")
         if uploaded_agency_file is not None:
             agency = get_agencies_balances(uploaded_agency_file)
-            data = data.append(agency, ignore_index=True)
+            data = pd.concat([data, pd.DataFrame(agency)], ignore_index=True)
 
     with col1:
         uploaded_atm_file = st.file_uploader("Seleccione el balance de ATM's")
         if uploaded_atm_file is not None:
             atm_balances = get_atm_balances(uploaded_atm_file)
             atm_transport = get_atm_transport(uploaded_atm_file)
-            data = data.append(atm_balances, ignore_index=True)
-            data = data.append(atm_transport, ignore_index=True)
+            data = pd.concat([data, pd.DataFrame(atm_balances)], ignore_index=True)
+            data = pd.concat([data, pd.DataFrame(atm_transport)], ignore_index=True)
 
-with graphs:                
+with graphs.container():                
     st.header('Estadísticas generales')
 
- 
     fig = go.Figure()
     salas = data[data['type'] == 'Salas']
-    agencias = data[data['type'] == 'Agencias']
-    automatic = data[data['type'] == 'ATM']
+    agencies = data[data['type'] == 'Agencias']
+    atm = data[data['type'] == 'ATM']
     transport = data[data['type'] == 'Transporte']
-    fig.add_trace(go.Bar(x=salas['date'], y=salas['hnl'], name='Salas'))
-    fig.add_trace(go.Bar(x=agencias['date'], y=agencias['hnl'], name='Agencias'))
-    fig.add_trace(go.Bar(x=automatic['date'], y=automatic['hnl'], name='ATM'))
-    fig.add_trace(go.Bar(x=transport['date'], y=transport['hnl'], name='Transporte'))
+    total = data.groupby(by=['date'], as_index=False).sum(numeric_only=True)
 
-    group_data = data.groupby(by=['date'], as_index=False).sum(numeric_only=True)
-    fig.add_scatter(x = group_data['date'], y=group_data['hnl'], mode="markers", opacity=0,
-                    marker={'symbol': 'square'},
-                    line={'color':'black'},
-                    name='Total')
-    fig.update_layout(barmode='relative', title_text='Saldos totales por día')
+    fig = graphBalance(salas, agencies, atm, transport, total)
     st.plotly_chart(fig, use_container_width=True);
