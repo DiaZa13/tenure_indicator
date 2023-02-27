@@ -10,21 +10,21 @@ import streamlit as st
 SALAS = ['CBA', 'CHT', 'ROA', 'SGA', 'TGU', 'SPS']
 
 
-@st.cache_data
 def getData() -> pd.DataFrame:
     return pd.read_feather('tenure.feather')
 
 
 def graphBalance(salas, agencies, atm, transport, total):
-    figure = go.Figure()
-    figure.add_trace(go.Bar(x=salas['date'], y=salas['hnl'], name='Salas'))
-    figure.add_trace(go.Bar(x=agencies['date'], y=agencies['hnl'], name='Agencias'))
-    figure.add_trace(go.Bar(x=atm['date'], y=atm['hnl'], name='ATM'))
-    figure.add_trace(go.Bar(x=transport['date'], y=transport['hnl'], name='Transporte'))
 
-    figure.add_scatter(x = total['date'], y=total['hnl'], mode="markers", opacity=0,
-                    marker={'symbol': 'square'},
-                    line={'color':'black'},
+    figure = go.Figure()
+    figure.add_trace(go.Bar(x=salas['date'], y=salas['hnl'], name='Salas', marker={'color':'midnightblue'}))
+    figure.add_trace(go.Bar(x=agencies['date'], y=agencies['hnl'], name='Agencias', marker={'color':'yellowgreen'}))
+    figure.add_trace(go.Bar(x=atm['date'], y=atm['hnl'], name='ATM', marker={'color':'orange'}))
+    figure.add_trace(go.Bar(x=transport['date'], y=transport['hnl'], name='Transporte', marker={'color':'deepskyblue'}))
+
+    figure.add_scatter(x = total['date'], y=total['hnl'], mode="markers", opacity=0.8,
+                    # marker={'symbol': 'square'},
+                    line={'color':'tan'},
                     name='Total')
 
     figure.update_layout(barmode='relative', title_text='Saldos totales por día')
@@ -75,6 +75,44 @@ def get_agencies_balances(agency_file):
 
     return balance
 
+# def get_atm_balances(atm_file):
+
+#     atm = {
+#         'date':[],
+#         'type':[],
+#         'hnl': [],
+#     }
+
+#     balance = {
+#         'date':[],
+#         'type':[],
+#         'hnl':[],
+#     } 
+#     file = StringIO(atm_file.getvalue().decode("utf-8"))
+#     reader = csv.reader(file, delimiter= ',')
+#     next(reader)
+#     for row in reader: 
+#         date = row[2].split(" ")
+#         if(len(date)>1):
+#             if date[1] == '5:00': 
+#                 atm.get('date').append(date[0])
+#                 atm.get('type').append('ATM')
+                
+#                 if '-' in row[3]:
+#                     atm.get('hnl').append(float('0'))  
+#                 else: 
+#                     atm.get('hnl').append(float(row[3]))
+                    
+#     file.close()
+#     df_atm = pd.DataFrame(atm)
+#     group_atm = df_atm.groupby('date', as_index= False).sum()
+
+#     balance.get('date').extend(group_atm.date.tolist())
+#     balance.get('type').extend( list('ATM' for x in range (len(group_atm.date))))
+#     balance.get('hnl').extend(group_atm.hnl.tolist())
+
+#     return balance
+
 def get_atm_balances(atm_file):
 
     atm = {
@@ -90,17 +128,17 @@ def get_atm_balances(atm_file):
     } 
     file = StringIO(atm_file.getvalue().decode("utf-8"))
     reader = csv.reader(file, delimiter= ',')
-    next(reader)
     for row in reader: 
         date = row[2].split(" ")
-        if date[1] == '05:00:00': 
-            atm.get('date').append(date[0])
-            atm.get('type').append('ATM')
-            
-            if '-' in row[3]:
-                atm.get('hnl').append(float('0'))  
-            else: 
-                atm.get('hnl').append(float(row[3]))
+        if(len(date)>1):
+            if date[1] == '05:00:00': 
+                atm.get('date').append(date[0])
+                atm.get('type').append('ATM')
+                
+                if '-' in row[3]:
+                    atm.get('hnl').append(float('0'))  
+                else: 
+                    atm.get('hnl').append(float(row[3]))
                     
     file.close()
     df_atm = pd.DataFrame(atm)
@@ -149,7 +187,7 @@ def get_atm_transport(atm_file):
         actual = row
     
     df_atm_transport = pd.DataFrame(atm_transport)
-    df_atm_transport = df_atm_transport.groupby(by=['date'], as_index=False).sum()
+    df_atm_transport = df_atm_transport.groupby(by=['date'], as_index=False).sum(numeric_only=True)
     balance.get('date').extend(df_atm_transport.date.tolist())
     balance.get('type').extend( list('Transporte' for x in range (len(df_atm_transport.date))))
     balance.get('hnl').extend(df_atm_transport.hnl.tolist())
