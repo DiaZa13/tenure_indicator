@@ -155,3 +155,12 @@ def get_atm_transport(atm_file):
     balance.get('hnl').extend(df_atm_transport.hnl.tolist())
 
     return balance
+
+def get_month_graph(data,option_month):
+    data['date'] = pd.to_datetime(data['date'])
+    data['month'] = data['date'].dt.month
+
+    # selecting rows based on condition
+    data_month = data[data['month'] == month.get(option_month)]
+
+    return data_month
