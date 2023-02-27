@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
-from PreprocessingData import get_agencies_balances, get_atm_balances, get_atm_transport, graphBalance, getData
+from PreprocessingData import get_agencies_balances, get_atm_balances, get_atm_transport, graphBalance, getData, month, get_month_graph
 
 
 # page configuration
@@ -67,3 +68,16 @@ with graphs.container():
 
     fig = graphBalance(salas, agencies, atm, transport, total)
     st.plotly_chart(fig, use_container_width=True);
+
+    # Select box para gráfica mensual
+    option_month = st.selectbox(
+        'Análisis mensual',
+        month.keys()
+    )
+
+    st.write('Usted seleccionó:', option_month)
+
+    # Gráfica mensual
+    data_month = get_month_graph(data, option_month)
+    month_fig = px.bar(data_month, x='date', y='hnl', color='type')
+    st.plotly_chart(month_fig, use_container_width=True)
