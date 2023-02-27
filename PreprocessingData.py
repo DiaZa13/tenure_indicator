@@ -9,6 +9,19 @@ import streamlit as st
 
 SALAS = ['CBA', 'CHT', 'ROA', 'SGA', 'TGU', 'SPS']
 
+month = {"Enero" : 1,
+         "Febrero" : 2,
+         "Marzo" : 3,
+         "Abril" : 4,
+         "Mayo" : 5,
+         "Junio" : 6,
+         "Julio" : 7,
+         "Agosto" : 8,
+         "Septiembre" : 9,
+         "Octubre" : 10,
+         "Noviembre" : 11,
+         "Diciembre" : 12
+}
 
 @st.cache_data
 def getData() -> pd.DataFrame:

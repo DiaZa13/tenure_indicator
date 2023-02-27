@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 import plotly.graph_objects as go
-from PreprocessingData import get_agencies_balances, get_atm_balances, get_atm_transport, graphBalance, getData
+from PreprocessingData import get_agencies_balances, get_atm_balances, get_atm_transport, graphBalance, getData, month, get_month_graph
 
 
 # page configuration
