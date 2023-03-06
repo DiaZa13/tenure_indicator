@@ -24,7 +24,8 @@ month = {"Enero" : 1,
 }
 
 def getData() -> pd.DataFrame:
-    return pd.read_feather('tenure.feather')
+    #return pd.read_feather('tenure.feather')
+    return pd.read_csv('tenure.csv')
 
 
 def graphBalance(salas, agencies, atm, transport, total):
@@ -211,7 +212,12 @@ def get_month_graph(data,option_month):
     data['date'] = pd.to_datetime(data['date'])
     data['month'] = data['date'].dt.month
 
+
     # selecting rows based on condition
     data_month = data[data['month'] == month.get(option_month)]
-
+    data_month['dates'] = data_month['date'].astype(str)
+    data_month['dates'] = data_month['date'].dt.strftime('%d/%m/%Y')
+    print(data_month)
     return data_month
+
+

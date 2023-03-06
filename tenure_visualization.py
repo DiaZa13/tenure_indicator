@@ -79,5 +79,6 @@ with graphs.container():
 
     # Gráfica mensual
     data_month = get_month_graph(data, option_month)
-    month_fig = px.bar(data_month, x='date', y='hnl', color='type')
+    month_fig = px.bar(data_month, x= 'dates', y='hnl', color='type', color_discrete_sequence=[
+                 "midnightblue", "yellowgreen", "deepskyblue", "orange"], title="Análisis de tenencia por mes")
     st.plotly_chart(month_fig, use_container_width=True)
